@@ -1,0 +1,1 @@
+A random set of utility methods for Vaadin 14+ applications, Java and TS
