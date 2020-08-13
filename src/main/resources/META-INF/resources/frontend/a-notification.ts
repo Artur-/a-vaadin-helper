@@ -1,3 +1,5 @@
+import '@vaadin/vaadin-notification';
+
 interface Options {
   position?: string;
   theme?: string;
