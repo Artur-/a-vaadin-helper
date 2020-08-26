@@ -25,7 +25,7 @@ public class LaunchUtil {
             URL url = new URL(location);
             Desktop desktop = Desktop.getDesktop();
             desktop.browse(url.toURI());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LoggerFactory.getLogger(LaunchUtil.class).info(alternativeText);
         } finally {
             if (oldProperty == null) {
