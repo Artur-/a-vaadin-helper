@@ -1,5 +1,6 @@
 package org.vaadin.artur.helpers;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +23,24 @@ public class LaunchUtil {
 
     public static void launchBrowser(String location, String alternativeText) {
         try {
+            // Wait until npm install has finished
+            waitForFile("node_modules/.vaadin/vaadin.json", 120);
             runNodeScript("const open = require('open');open('" + location + "');");
         } catch (Throwable e) {
             LoggerFactory.getLogger(LaunchUtil.class).info(alternativeText);
+        }
+    }
+
+    private static void waitForFile(String fileNameInProject, int maxTime) {
+        File f = new File(fileNameInProject);
+        while (!f.exists() && maxTime-- > 0) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                break;
+            }
+            LoggerFactory.getLogger(LaunchUtil.class)
+                    .debug("Waiting for " + fileNameInProject + " to become available");
         }
     }
 
