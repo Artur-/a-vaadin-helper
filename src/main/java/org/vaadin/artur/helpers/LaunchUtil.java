@@ -1,19 +1,19 @@
 package org.vaadin.artur.helpers;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 
-@NpmPackage(value = "open", version = "^7.2.1")
 public class LaunchUtil {
     private static final String LAUNCH_TRACKER = "LaunchUtil.hasLaunched";
 
@@ -23,24 +23,20 @@ public class LaunchUtil {
 
     public static void launchBrowser(String location, String alternativeText) {
         try {
-            // Wait until npm install has finished
-            waitForFile("node_modules/.vaadin/vaadin.json", 120);
-            runNodeScript("const open = require('open');open('" + location + "');");
-        } catch (Throwable e) {
-            LoggerFactory.getLogger(LaunchUtil.class).info(alternativeText);
-        }
-    }
-
-    private static void waitForFile(String fileNameInProject, int maxTime) {
-        File f = new File(fileNameInProject);
-        while (!f.exists() && maxTime-- > 0) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                break;
+            File bundleTempFile = File.createTempFile("a-vaadin-helper-bundle", "js");
+            bundleTempFile.deleteOnExit();
+            try (FileOutputStream out = new FileOutputStream(bundleTempFile)) {
+                IOUtils.copyLarge(
+                        LaunchUtil.class.getResourceAsStream("/META-INF/resources/frontend/a-vaadin-helper-bundle.js"),
+                        out);
+                String cmd = String.format("const open = require('%s').open;open('" + location + "');",
+                        bundleTempFile.getAbsolutePath().replace("\\", "/"));
+                runNodeScript(cmd);
+            } catch (Throwable e) {
+                LoggerFactory.getLogger(LaunchUtil.class).info(alternativeText);
             }
-            LoggerFactory.getLogger(LaunchUtil.class)
-                    .debug("Waiting for " + fileNameInProject + " to become available");
+        } catch (Exception e) {
+            LoggerFactory.getLogger(LaunchUtil.class).error("Unable to create temp file for bundle", e);
         }
     }
 
