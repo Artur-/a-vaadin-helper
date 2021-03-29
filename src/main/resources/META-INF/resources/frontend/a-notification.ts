@@ -28,8 +28,8 @@ const _showNotification = (text: string, options: Options) => {
   n.appendChild(tpl);
   document.body.appendChild(n);
   n.opened = true;
-  n.addEventListener("opened-changed", (e: any) => {
-    if (!e.detail.opened) {
+  n.addEventListener("opened-changed", (e: CustomEvemt) => {
+    if (!e.detail.value) {
       document.body.removeChild(n);
     }
   });
