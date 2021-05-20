@@ -20,12 +20,12 @@ export const showErrorNotification = (
 };
 
 const _showNotification = (text: string, options: Options) => {
-  const n: any = document.createElement("vaadin-notification");
-  const tpl = document.createElement("template");
-  const span = document.createElement("span");
-  span.innerText = text;
-  tpl.content.appendChild(span);
-  n.appendChild(tpl);
+  const n = document.createElement('vaadin-notification');
+
+  n.renderer = (root: HTMLElement, notification?: NotificationElement) => {
+    root.innerHTML = `<span></span>`;
+    root.querySelector('span').innerText = text;
+  };
   document.body.appendChild(n);
   n.opened = true;
   n.addEventListener("opened-changed", (e: CustomEvemt) => {
