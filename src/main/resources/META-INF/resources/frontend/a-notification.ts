@@ -24,11 +24,11 @@ const _showNotification = (text: string, options: Options) => {
 
   n.renderer = (root: HTMLElement) => {
     root.innerHTML = `<span></span>`;
-    root.querySelector('span').innerText = text;
+    root.querySelector("span")!.innerText = text;
   };
   document.body.appendChild(n);
   n.opened = true;
-  n.addEventListener("opened-changed", (e: CustomEvemt) => {
+  n.addEventListener("opened-changed", (e: CustomEvent) => {
     if (!e.detail.value) {
       document.body.removeChild(n);
     }
