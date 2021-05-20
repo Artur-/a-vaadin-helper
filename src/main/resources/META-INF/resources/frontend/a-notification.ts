@@ -22,7 +22,7 @@ export const showErrorNotification = (
 const _showNotification = (text: string, options: Options) => {
   const n: any = document.createElement('vaadin-notification');
 
-  n.renderer = (root: HTMLElement, notification?: NotificationElement) => {
+  n.renderer = (root: HTMLElement) => {
     root.innerHTML = `<span></span>`;
     root.querySelector('span').innerText = text;
   };
