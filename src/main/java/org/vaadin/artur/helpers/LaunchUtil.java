@@ -6,19 +6,47 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.server.DevModeHandler;
+import javax.servlet.ServletContext;
+
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 
 public class LaunchUtil {
     private static final String LAUNCH_TRACKER = "LaunchUtil.hasLaunched";
 
-    private static boolean isProductionMode() {
-        return DevModeHandler.getDevModeHandler() == null;
+    private static boolean isProductionMode(ConfigurableApplicationContext app) {
+        if (!(app instanceof GenericWebApplicationContext)) {
+            getLogger().warn("Unable to determine production mode for an Spring Boot application context of type "
+                    + app.getClass().getName());
+            return false;
+        }
+
+        try {
+            // This is V19+
+            ServletContext servletContext = ((GenericWebApplicationContext) app).getServletContext();
+            VaadinContext context = new VaadinServletContext(servletContext);
+            ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.get(context);
+            return applicationConfiguration.isProductionMode();
+        } catch (Exception e) {
+        }
+
+        try {
+            // This is V14-V18
+            return com.vaadin.flow.server.DevModeHandler.getDevModeHandler() == null;
+        } catch (Exception e) {
+        }
+
+        // Assume production when unclear so no browser is popped up for production
+        return true;
     }
 
     public static void launchBrowser(String location, String alternativeText) {
@@ -33,11 +61,15 @@ public class LaunchUtil {
                         bundleTempFile.getAbsolutePath().replace("\\", "/"));
                 runNodeScript(cmd);
             } catch (Throwable e) {
-                LoggerFactory.getLogger(LaunchUtil.class).info(alternativeText);
+                getLogger().info(alternativeText);
             }
         } catch (Exception e) {
-            LoggerFactory.getLogger(LaunchUtil.class).error("Unable to create temp file for bundle", e);
+            getLogger().error("Unable to create temp file for bundle", e);
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(LaunchUtil.class);
     }
 
     private static int runNodeScript(String script) throws InterruptedException, IOException {
@@ -65,7 +97,7 @@ public class LaunchUtil {
             return;
         }
 
-        if (!LaunchUtil.isProductionMode()) {
+        if (!LaunchUtil.isProductionMode(app)) {
             String location = "http://localhost:" + app.getEnvironment().getProperty("local.server.port") + "/";
             LaunchUtil.launchBrowser(location, "Application started at " + location);
             setLaunched();
