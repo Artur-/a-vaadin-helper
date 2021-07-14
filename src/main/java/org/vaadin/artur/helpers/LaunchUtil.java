@@ -36,13 +36,13 @@ public class LaunchUtil {
             VaadinContext context = new VaadinServletContext(servletContext);
             ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.get(context);
             return applicationConfiguration.isProductionMode();
-        } catch (Exception e) {
+        } catch (Throwable e) {
         }
 
         try {
             // This is V14-V18
             return com.vaadin.flow.server.DevModeHandler.getDevModeHandler() == null;
-        } catch (Exception e) {
+        } catch (Throwable e) {
         }
 
         // Assume production when unclear so no browser is popped up for production
