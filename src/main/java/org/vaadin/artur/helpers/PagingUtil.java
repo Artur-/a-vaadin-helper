@@ -41,7 +41,7 @@ public class PagingUtil {
         return new Order(direction, sortOrder.getSorted());
     }
 
-    private static Sort javaSortToSpring(List<SortOrder<String>> sortOrders) {
+    private static Sort javaSortToSpring(List<? extends SortOrder<String>> sortOrders) {
         List<Order> orders = sortOrders.stream().map(PagingUtil::javaSortOrderToSpringOrder)
                 .collect(Collectors.toList());
         return Sort.by(orders);
@@ -72,7 +72,7 @@ public class PagingUtil {
                 pageSizeAndNumberAndSortOrders.getPageSize(), pageSizeAndNumberAndSortOrders.getSort());
     }
 
-    public static Pageable offsetLimitSortOrdersToPageable(int offset, int limit, List<SortOrder<String>> sortOrders) {
+    public static Pageable offsetLimitSortOrdersToPageable(int offset, int limit, List<? extends SortOrder<String>> sortOrders) {
         Sort sort = javaSortToSpring(sortOrders);
         PageRequest pageSizeAndNumberAndSortOrders = limitAndOffsetAndSortOrdersToPageSizeAndNumber(offset, limit,
                 sort);
